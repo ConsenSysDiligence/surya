@@ -48,6 +48,7 @@ export function graphSimple(files, options = {}) {
   let structsPerContract = {null:[]};
   let contractUsingFor = {};
   let contractNames = [];
+  let customErrorNames = [];
 
   for (let file of files) {
 
@@ -304,9 +305,9 @@ export function graphSimple(files, options = {}) {
             structsOfDependencies = structsOfDependencies.concat(structsPerContract[dep]);
           }
         }
-
+        
         if(
-          parserHelpers.isRegularFunctionCall(node, contractNames, eventsOfDependencies, structsOfDependencies)
+          parserHelpers.isRegularFunctionCall(node, contractNames, eventsOfDependencies, structsOfDependencies, customErrorNames)
         ) {
           opts.color = colorScheme.call.regular;
           name = expr.name;

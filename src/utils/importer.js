@@ -77,25 +77,67 @@ export function resolveImportPath(baseFilePath, importedFilePath, projectDir = p
   if (importedFilePath.slice(0, 1) === '.' || importedFilePath.slice(0, 1) === '/') {
     resolvedPath = path.resolve(baseDirPath, importedFilePath);
   } else {
-    // It's most likely a special case using a remapping to node_modules directory.
+    // It's most likely a special case using a remapping to another directory (ie node_modules or lib).
     let currentDir = path.resolve(baseDirPath, '..');
     let currentDirArray = baseDirPath.split(path.sep);
     let currentDirName = currentDirArray.pop();
-    let nodeModulesDir = '';
+    let targetImportDir = '';
+    let currentDirContents = '';
+    let keepLooping = true;
+    let nodeModulesBool = false;
+    let forgeRemappingsBool = false;
+    let forgeRemappingInput = '';
+    let forgeRemappingOutput = '';
 
-    while (!fs.readdirSync(currentDir).includes('node_modules') && !nodeModulesDir) {
-      if (topmostDirArray.length >= currentDirArray.length) {
-        throw new Error(`Import statement seems to be a Truffle "node_modules remapping," but no 'node_modules' directory could be found.`);
+    while (keepLooping) {
+      if (topmostDirArray.length > currentDirArray.length) {
+        throw new Error(`Import statement seems to be a Truffle "node_modules remapping" or Forge "remappings.txt", but no corresponding directory could be found.`);
       }
-      currentDirName = currentDirArray.pop();
-      currentDir = path.resolve(currentDir, '..');
+      currentDirContents = fs.readdirSync(currentDir);
+      // Assumes that both remappings.txt and node_modules are on the same level, also that they can co-exist
+      nodeModulesBool = currentDirContents.includes('node_modules');
+      forgeRemappingsBool = currentDirContents.includes('remappings.txt');
+      keepLooping = forgeRemappingsBool || nodeModulesBool ? false : true;
+
+      if(keepLooping) {
+        currentDirName = currentDirArray.pop();
+        currentDir = path.resolve(currentDir, '..');
+      }
     }
 
-    // We've found the directory containing node_modules.
-    nodeModulesDir = path.join(currentDir, 'node_modules');
-    resolvedPath = path.join(nodeModulesDir, importedFilePath);
-  }
+    if (forgeRemappingsBool) {
+      let remappingsFile = fs.readFileSync(path.join(currentDir, "remappings.txt"), 'utf-8');
+      let remappingsArray = remappingsFile.split(/\r?\n/);
+      let importBase = importedFilePath.split("/")[0];
 
+      // Scan remappings
+      for (let idx=0;idx<remappingsArray.length;idx++) {
+        let remappingSplit = remappingsArray[idx].split("=");
+
+        // Assumes only one '=' in the string
+        if (remappingSplit.length > 2) {
+          throw new Error(`Multiple assignment symbols found in remappings.txt.`);
+        }
+
+        if (remappingSplit[0].includes(importBase)) {
+          forgeRemappingInput = remappingSplit[0];
+          forgeRemappingOutput = remappingSplit[1];
+          break;
+        }
+      }
+
+      // We've found the directory containing remappings.txt.
+      resolvedPath = path.join(currentDir, importedFilePath.replace(forgeRemappingInput, forgeRemappingOutput));
+    } 
+    
+    if (!forgeRemappingsBool || (forgeRemappingsBool && !forgeRemappingInput)) {
+      // Use the directory containing node_modules.
+      targetImportDir = path.join(currentDir, "node_modules");
+      resolvedPath = path.join(targetImportDir, importedFilePath);
+    }
+
+  }
+  
   // Verify that the resolved path is actually a file.
   if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isFile()) {
     throw new Error(`Import path not resolved to a file: ${resolvedPath}`);

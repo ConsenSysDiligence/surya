@@ -269,7 +269,10 @@ export function graph(files, options = {}) {
             opts.fillcolor = opts.color;
           }
         }
-          
+        
+        if(cluster == null)
+          return;
+        
         cluster.addNode(nodeName(name, contractName), opts);
       },
 
@@ -478,7 +481,7 @@ export function graph(files, options = {}) {
               }
 
               // check which usingFor contract the method resolves to (best effort first match)
-              let matchingContracts = [...contractUsingForDefinitions].filter(contract => functionsPerContract[contract].includes(name));
+              let matchingContracts = [...contractUsingForDefinitions].filter(contract => functionsPerContract[contract] != undefined ? functionsPerContract[contract].includes(name) : false);
             
               if(matchingContracts.length > 0){
                 // we found at least one matching contract. use the first. don't know what to do if multiple are matching :/
@@ -493,7 +496,7 @@ export function graph(files, options = {}) {
           } else if (contractUsingFor[contractName].hasOwnProperty('*') &&
           functionsPerContract.hasOwnProperty(contractUsingFor[contractName]['*'])) {
             // check which usingFor contract the method resolves to (best effort first match)
-            let matchingContracts = [...contractUsingFor[contractName]['*']].filter(contract => functionsPerContract[contract].includes(name));
+            let matchingContracts = [...contractUsingFor[contractName]['*']].filter(contract => functionsPerContract[contract] != undefined ? functionsPerContract[contract].includes(name) : false);
             
             if(matchingContracts.length > 0){
               // we found at least one matching contract. use the first. don't know what to do if multiple are matching :/
@@ -512,7 +515,7 @@ export function graph(files, options = {}) {
           } else if(object === 'this') {
             opts.color = colorScheme.call.this;
           } else if (object === 'super') {
-            let matchingContracts = [...dependencies[contractName]].filter(contract => functionsPerContract[contract].includes(name));
+            let matchingContracts = [...dependencies[contractName]].filter(contract => functionsPerContract[contract] != undefined ? functionsPerContract[contract].includes(name) : false);
 
             if(matchingContracts.length > 0){
               localContractName = matchingContracts[0];
