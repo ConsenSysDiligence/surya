@@ -16,13 +16,13 @@
 
 #### 
 
-Surya is an utility tool for smart contract systems. It provides a number of visual outputs and information about the contracts' structure. Also supports querying the function call graph in multiple ways to aid in the manual inspection of contracts.
+Surya is a utility tool for smart contract systems. It provides a number of visual outputs and information about the contracts' structure. Also supports querying the function call graph in multiple ways to aid in the manual inspection of contracts.
 
-Currently only supports Solidity but we hope to extend the tool to encompass other languages.
+Currently it only supports Solidity but we hope to extend the tool to encompass other languages.
 
 The name stems from the sun deity [Surya](https://en.wikipedia.org/wiki/Surya)
 
-Why the sun, you ask? Because "sun" in latin and portuguese is [*Sol*](https://en.wikipedia.org/wiki/Solar_deity).
+Why the sun, you ask? Because "sun" in Latin and Portuguese is [*Sol*](https://en.wikipedia.org/wiki/Solar_deity).
 
 
 ## Getting Started
@@ -41,11 +41,11 @@ Currently, however, the easiest way to use Surya in your project might be throug
 
 ## Command List
 
-Surya takes in a `--no-color` flag with any command that disables the colors in the output making it effectively plain text.
+Surya accepts a `--no-color` flag with any command that disables the colors in the output making it effectively plain text.
 
 All the commands that take in an array of files also take in a flag (`-i`/`--import`) that resolves file imports automatically.
-Please be aware that in the case you use Truffle's "node_modules" remapping import statements, Surya searches up the project directory recursively until it finds a `contracts` directory in the Truffle project *up until the directory you ran the command in*.
-This is so that we try to prevent any kind of path traversal vulnerabilities that could come from exposing Surya as a service.
+Please be aware that if you use Truffle's "node_modules" remapping import statements, Surya searches up the project directory recursively until it finds a `contracts` directory in the Truffle project *up until the directory you ran the command in*.
+This is to help prevent any kind of path traversal vulnerabilities that could come from exposing Surya as a service.
 
 All the commands that take in an array of files also take in a flag (`-c`/`--content`) that allows you to pass the actual source code contents as an argument instead of a file path (mostly useful when Surya is being used as another package's dependency).
 
@@ -61,7 +61,7 @@ surya graph contracts/**/*.sol | dot -Tpng > MyContract.png
 
 <img src="https://user-images.githubusercontent.com/4008213/39415345-fbac4e3a-4c39-11e8-8260-0d9670c352d6.png" height="236">
 
-There is new flag (`-s`/`--simple`) that amkes the command chart only the *contract* call graph, instead of the function call graph. It's super useful for higher-level analyses!
+There is a new flag (`-s`/`--simple`) that makes the command chart only the *contract* call graph, instead of the function call graph. It's super useful for higher-level analyses!
 
 **Accepted flags**
 
@@ -139,7 +139,7 @@ surya inheritance MyContract.sol | dot -Tpng > MyContract.png
 
 ### dependencies
 
-The `dependencies` command outputs the [c3-linearization](https://en.wikipedia.org/wiki/C3_linearization) of a given contract's inheritance graph. Contracts will be listed starting with most-derived, ie. if the same function is defined in more than one contract, the solidity compiler will use the definition in whichever contract is listed first. 
+The `dependencies` command outputs the [c3-linearization](https://en.wikipedia.org/wiki/C3_linearization) of a given contract's inheritance graph. Contracts will be listed starting with most-derived, ie. if the same function is defined in more than one contract, the Solidity compiler will use the definition in whichever contract is listed first. 
 
 ```shell
 surya dependencies Exchange Exchange.sol
