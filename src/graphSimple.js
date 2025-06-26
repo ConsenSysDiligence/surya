@@ -306,7 +306,7 @@ export function graphSimple(files, options = {}) {
         }
 
         if(
-          parserHelpers.isRegularFunctionCall(node, contractNames, eventsOfDependencies, structsOfDependencies)
+          parserHelpers.isRegularFunctionCall(node, contractNames, eventsOfDependencies, structsOfDependencies, [])
         ) {
           opts.color = colorScheme.call.regular;
           name = expr.name;
